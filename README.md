@@ -1,73 +1,73 @@
-# React + TypeScript + Vite
+# Tsilly
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A browser-based TypeScript playground with live preview. Write HTML, CSS, and TypeScript code side-by-side and see instant results.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Three-pane editor** - HTML, CSS, and TypeScript editors powered by Monaco Editor
+- **Live preview** - Instantly see your changes rendered in an iframe
+- **TypeScript compilation** - Client-side TypeScript to JavaScript compilation using Sucrase
+- **Emmet support** - Fast HTML/CSS authoring with Emmet abbreviations
+- **Console output** - View console logs and errors from your code
+- **Share workspaces** - Generate shareable URLs with your code encoded
+- **Local persistence** - Your work is automatically saved to localStorage
+- **Resizable panels** - Adjust editor and preview panel sizes to your preference
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Prerequisites
 
-## Expanding the ESLint configuration
+- Node.js 18+
+- npm
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Installation
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+### Build
+
+```bash
+npm run build
+```
+
+### Preview Production Build
+
+```bash
+npm run preview
+```
+
+## Scripts
+
+| Script                | Description                  |
+| --------------------- | ---------------------------- |
+| `npm run dev`         | Start development server     |
+| `npm run build`       | Build for production         |
+| `npm run preview`     | Preview production build     |
+| `npm run lint`        | Run ESLint                   |
+| `npm run typecheck`   | Run TypeScript type checking |
+| `npm run test:e2e`    | Run Playwright e2e tests     |
+| `npm run test:e2e:ui` | Run Playwright tests with UI |
+
+## Tech Stack
+
+- [React](https://react.dev/) - UI framework
+- [Vite](https://vite.dev/) - Build tool
+- [TypeScript](https://www.typescriptlang.org/) - Type safety
+- [Monaco Editor](https://microsoft.github.io/monaco-editor/) - Code editor
+- [Sucrase](https://github.com/alangpierce/sucrase) - TypeScript compilation
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [Playwright](https://playwright.dev/) - E2E testing
+
+## License
+
+MIT
