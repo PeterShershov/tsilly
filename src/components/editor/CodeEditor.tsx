@@ -10,29 +10,34 @@ interface CodeEditorProps {
 type Monaco = typeof import("monaco-editor");
 type Editor = import("monaco-editor").editor.IStandaloneCodeEditor;
 
-export function CodeEditor({ language, value, onChange, onReady }: CodeEditorProps) {
+export function CodeEditor({
+  language,
+  value,
+  onChange,
+  onReady,
+}: CodeEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<Editor | null>(null);
-  const isUpdatingRef = useRef(false);
+  const lastValueRef = useRef(value);
+  const onChangeRef = useRef(onChange);
   const [monaco, setMonaco] = useState<Monaco | null>(null);
+
+  // Keep onChange ref up to date
+  onChangeRef.current = onChange;
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadMonaco() {
       const monacoModule = await import("monaco-editor");
-      const editorWorker = await import(
-        "monaco-editor/esm/vs/editor/editor.worker?worker"
-      );
-      const cssWorker = await import(
-        "monaco-editor/esm/vs/language/css/css.worker?worker"
-      );
-      const htmlWorker = await import(
-        "monaco-editor/esm/vs/language/html/html.worker?worker"
-      );
-      const tsWorker = await import(
-        "monaco-editor/esm/vs/language/typescript/ts.worker?worker"
-      );
+      const editorWorker =
+        await import("monaco-editor/esm/vs/editor/editor.worker?worker");
+      const cssWorker =
+        await import("monaco-editor/esm/vs/language/css/css.worker?worker");
+      const htmlWorker =
+        await import("monaco-editor/esm/vs/language/html/html.worker?worker");
+      const tsWorker =
+        await import("monaco-editor/esm/vs/language/typescript/ts.worker?worker");
 
       if (cancelled) return;
 
@@ -94,20 +99,21 @@ export function CodeEditor({ language, value, onChange, onReady }: CodeEditorPro
       theme: "vs-dark",
       minimap: { enabled: false },
       fontSize: 14,
-      lineNumbers: "on",
+      lineNumbers: "off",
       scrollBeyondLastLine: false,
       automaticLayout: true,
       tabSize: 2,
       wordWrap: "on",
       padding: { top: 8 },
+      fixedOverflowWidgets: true,
     });
 
     editorRef.current = editor;
 
     const disposable = editor.onDidChangeModelContent(() => {
-      if (!isUpdatingRef.current) {
-        onChange(editor.getValue());
-      }
+      const newValue = editor.getValue();
+      lastValueRef.current = newValue;
+      onChangeRef.current(newValue);
     });
 
     // Signal that the editor is ready
@@ -121,10 +127,11 @@ export function CodeEditor({ language, value, onChange, onReady }: CodeEditorPro
 
   useEffect(() => {
     const editor = editorRef.current;
-    if (editor && editor.getValue() !== value) {
-      isUpdatingRef.current = true;
+    // Only sync if the value changed externally (not from user typing)
+    // and the editor doesn't have focus (user isn't actively editing)
+    if (editor && value !== lastValueRef.current && !editor.hasTextFocus()) {
+      lastValueRef.current = value;
       editor.setValue(value);
-      isUpdatingRef.current = false;
     }
   }, [value]);
 
@@ -136,5 +143,11 @@ export function CodeEditor({ language, value, onChange, onReady }: CodeEditorPro
     );
   }
 
-  return <div ref={containerRef} className="h-full w-full" data-testid={`editor-${language}`} />;
+  return (
+    <div
+      ref={containerRef}
+      className="h-full w-full"
+      data-testid={`editor-${language}`}
+    />
+  );
 }

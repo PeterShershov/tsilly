@@ -16,3 +16,7 @@ body {
 button {
   cursor: pointer;
 }
+
+.pane {
+  overflow: visible !important;
+}

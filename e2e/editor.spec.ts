@@ -240,6 +240,39 @@ test.describe("Tsilly Editor", () => {
     expect(h1Color).toBe("rgb(128, 0, 128)");
   });
 
+  test("cursor position is preserved when typing with pauses", async ({ page }) => {
+    // Click into the CSS editor to focus it
+    const cssEditor = page.locator("[data-testid='editor-css']");
+    await cssEditor.click();
+
+    // Wait for editor to be ready
+    await page.waitForTimeout(200);
+
+    // Type some text (avoid special chars that trigger auto-complete)
+    await page.keyboard.type("hello");
+
+    // Wait a bit (simulating user pause - longer than debounce)
+    await page.waitForTimeout(1500);
+
+    // Type more text - cursor should continue from where it was
+    await page.keyboard.type(" world");
+
+    // Get the editor content
+    const content = await page.evaluate(() => {
+      const monaco = (window as any).monaco;
+      const editors = monaco.editor.getEditors();
+      for (const editor of editors) {
+        if (editor.getContainerDomNode().dataset.testid === "editor-css") {
+          return editor.getValue();
+        }
+      }
+      return null;
+    });
+
+    // If cursor jumped to start, content would be " worldhello" instead of "hello world"
+    expect(content).toBe("hello world");
+  });
+
   test.describe("Layout Dropdown", () => {
     test("opens dropdown and shows all layout options", async ({ page }) => {
       // Click the layout button

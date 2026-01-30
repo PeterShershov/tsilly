@@ -109,7 +109,7 @@ export function LayoutDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 bg-[#252526] border border-[#3c3c3c] rounded-lg shadow-xl overflow-hidden min-w-[140px]">
+        <div className="absolute right-0 top-full mt-1 z-50 bg-[#252526] border border-[#3c3c3c] rounded-lg shadow-xl min-w-35">
           {layouts.map((layout) => (
             <button
               key={layout.value}

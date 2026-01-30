@@ -13,7 +13,9 @@ export function EditorPanels({ onEditorReady }: EditorPanelsProps) {
   const { state, dispatch } = useEditor();
   const isMobile = useIsMobile();
 
-  const visiblePanels = Object.entries(state.panels).filter(([, visible]) => visible);
+  const visiblePanels = Object.entries(state.panels).filter(
+    ([, visible]) => visible,
+  );
 
   if (visiblePanels.length === 0) {
     return (
@@ -50,7 +52,9 @@ export function EditorPanels({ onEditorReady }: EditorPanelsProps) {
       <CodeEditor
         language="typescript"
         value={state.typescript}
-        onChange={(value) => dispatch({ type: "SET_TYPESCRIPT", payload: value })}
+        onChange={(value) =>
+          dispatch({ type: "SET_TYPESCRIPT", payload: value })
+        }
         onReady={onEditorReady}
       />
     </EditorPane>
@@ -62,7 +66,8 @@ export function EditorPanels({ onEditorReady }: EditorPanelsProps) {
     </EditorPane>
   );
 
-  const hasVisibleEditors = state.panels.html || state.panels.css || state.panels.typescript;
+  const hasVisibleEditors =
+    state.panels.html || state.panels.css || state.panels.typescript;
 
   // Use layout as key to force clean remount when layout changes
   const layoutKey = isMobile ? "mobile" : state.layout;
@@ -72,10 +77,26 @@ export function EditorPanels({ onEditorReady }: EditorPanelsProps) {
     return (
       <div key={layoutKey} className="h-full w-full layout-container">
         <Allotment vertical>
-          {state.panels.html && <Allotment.Pane minSize={100}>{htmlContent}</Allotment.Pane>}
-          {state.panels.css && <Allotment.Pane minSize={100}>{cssContent}</Allotment.Pane>}
-          {state.panels.typescript && <Allotment.Pane minSize={100}>{tsContent}</Allotment.Pane>}
-          {state.panels.preview && <Allotment.Pane minSize={100}>{previewContent}</Allotment.Pane>}
+          {state.panels.html && (
+            <Allotment.Pane className="pane" minSize={100}>
+              {htmlContent}
+            </Allotment.Pane>
+          )}
+          {state.panels.css && (
+            <Allotment.Pane className="pane" minSize={100}>
+              {cssContent}
+            </Allotment.Pane>
+          )}
+          {state.panels.typescript && (
+            <Allotment.Pane className="pane" minSize={100}>
+              {tsContent}
+            </Allotment.Pane>
+          )}
+          {state.panels.preview && (
+            <Allotment.Pane className="pane" minSize={100}>
+              {previewContent}
+            </Allotment.Pane>
+          )}
         </Allotment>
       </div>
     );
@@ -86,10 +107,18 @@ export function EditorPanels({ onEditorReady }: EditorPanelsProps) {
     return (
       <div key={layoutKey} className="h-full w-full layout-container">
         <Allotment>
-          {state.panels.html && <Allotment.Pane minSize={100}>{htmlContent}</Allotment.Pane>}
-          {state.panels.css && <Allotment.Pane minSize={100}>{cssContent}</Allotment.Pane>}
-          {state.panels.typescript && <Allotment.Pane minSize={100}>{tsContent}</Allotment.Pane>}
-          {state.panels.preview && <Allotment.Pane minSize={100}>{previewContent}</Allotment.Pane>}
+          {state.panels.html && (
+            <Allotment.Pane minSize={100}>{htmlContent}</Allotment.Pane>
+          )}
+          {state.panels.css && (
+            <Allotment.Pane minSize={100}>{cssContent}</Allotment.Pane>
+          )}
+          {state.panels.typescript && (
+            <Allotment.Pane minSize={100}>{tsContent}</Allotment.Pane>
+          )}
+          {state.panels.preview && (
+            <Allotment.Pane minSize={100}>{previewContent}</Allotment.Pane>
+          )}
         </Allotment>
       </div>
     );
@@ -103,13 +132,21 @@ export function EditorPanels({ onEditorReady }: EditorPanelsProps) {
           {hasVisibleEditors && (
             <Allotment.Pane minSize={100}>
               <Allotment>
-                {state.panels.html && <Allotment.Pane minSize={100}>{htmlContent}</Allotment.Pane>}
-                {state.panels.css && <Allotment.Pane minSize={100}>{cssContent}</Allotment.Pane>}
-                {state.panels.typescript && <Allotment.Pane minSize={100}>{tsContent}</Allotment.Pane>}
+                {state.panels.html && (
+                  <Allotment.Pane minSize={100}>{htmlContent}</Allotment.Pane>
+                )}
+                {state.panels.css && (
+                  <Allotment.Pane minSize={100}>{cssContent}</Allotment.Pane>
+                )}
+                {state.panels.typescript && (
+                  <Allotment.Pane minSize={100}>{tsContent}</Allotment.Pane>
+                )}
               </Allotment>
             </Allotment.Pane>
           )}
-          {state.panels.preview && <Allotment.Pane minSize={100}>{previewContent}</Allotment.Pane>}
+          {state.panels.preview && (
+            <Allotment.Pane minSize={100}>{previewContent}</Allotment.Pane>
+          )}
         </Allotment>
       </div>
     );
@@ -123,13 +160,21 @@ export function EditorPanels({ onEditorReady }: EditorPanelsProps) {
           {hasVisibleEditors && (
             <Allotment.Pane minSize={100}>
               <Allotment vertical>
-                {state.panels.html && <Allotment.Pane minSize={100}>{htmlContent}</Allotment.Pane>}
-                {state.panels.css && <Allotment.Pane minSize={100}>{cssContent}</Allotment.Pane>}
-                {state.panels.typescript && <Allotment.Pane minSize={100}>{tsContent}</Allotment.Pane>}
+                {state.panels.html && (
+                  <Allotment.Pane minSize={100}>{htmlContent}</Allotment.Pane>
+                )}
+                {state.panels.css && (
+                  <Allotment.Pane minSize={100}>{cssContent}</Allotment.Pane>
+                )}
+                {state.panels.typescript && (
+                  <Allotment.Pane minSize={100}>{tsContent}</Allotment.Pane>
+                )}
               </Allotment>
             </Allotment.Pane>
           )}
-          {state.panels.preview && <Allotment.Pane minSize={100}>{previewContent}</Allotment.Pane>}
+          {state.panels.preview && (
+            <Allotment.Pane minSize={100}>{previewContent}</Allotment.Pane>
+          )}
         </Allotment>
       </div>
     );
