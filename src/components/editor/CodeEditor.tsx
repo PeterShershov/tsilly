@@ -59,18 +59,28 @@ export function CodeEditor({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const ts = (monacoModule.languages as any).typescript;
       if (ts?.typescriptDefaults) {
+        // Enable eager model sync for faster completions
+        ts.typescriptDefaults.setEagerModelSync(true);
+
         ts.typescriptDefaults.setCompilerOptions({
           target: ts.ScriptTarget?.ESNext ?? 99,
           module: ts.ModuleKind?.ESNext ?? 99,
           strict: true,
           noEmit: true,
           allowNonTsExtensions: true,
+          allowJs: true,
+          lib: ["esnext", "dom", "dom.iterable"],
         });
 
         ts.typescriptDefaults.setDiagnosticsOptions({
           noSemanticValidation: false,
           noSyntaxValidation: false,
         });
+      }
+
+      // Also configure JavaScript defaults
+      if (ts?.javascriptDefaults) {
+        ts.javascriptDefaults.setEagerModelSync(true);
       }
 
       // Initialize Emmet for HTML and CSS
@@ -93,9 +103,20 @@ export function CodeEditor({
   useEffect(() => {
     if (!containerRef.current || !monaco) return;
 
+    // Create model with proper file extension for language services
+    const fileExtension = language === "typescript" ? "ts" : language === "html" ? "html" : "css";
+    const uri = monaco.Uri.parse(`file:///main.${fileExtension}`);
+
+    // Dispose existing model if it exists
+    const existingModel = monaco.editor.getModel(uri);
+    if (existingModel) {
+      existingModel.dispose();
+    }
+
+    const model = monaco.editor.createModel(value, language, uri);
+
     const editor = monaco.editor.create(containerRef.current, {
-      value,
-      language,
+      model,
       theme: "vs-dark",
       minimap: { enabled: false },
       fontSize: 14,
