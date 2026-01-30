@@ -13,11 +13,13 @@ export interface PanelVisibility {
 }
 
 export interface TypeScriptConfig {
-  enableJsx: boolean;
-  jsxRuntime: "classic" | "automatic";
+  // JSX Options (compilerOptions.jsx)
+  jsx: "none" | "react" | "react-jsx" | "react-jsxdev";
   jsxImportSource: string;
-  disableESTransforms: boolean;
-  production: boolean;
+  jsxFactory: string;
+  jsxFragmentFactory: string;
+  // Output Options
+  target: "esnext" | "es2015" | "es5";
 }
 
 export interface EditorState {
@@ -30,7 +32,6 @@ export interface EditorState {
   consoleOpen: boolean;
   consoleLogs: ConsoleLogEntry[];
   tsConfig: TypeScriptConfig;
-  settingsPanelOpen: boolean;
   runCounter: number;
 }
 
@@ -44,6 +45,5 @@ export type EditorAction =
   | { type: "ADD_CONSOLE_LOG"; payload: ConsoleLogEntry }
   | { type: "CLEAR_CONSOLE" }
   | { type: "LOAD_STATE"; payload: Partial<EditorState> }
-  | { type: "TOGGLE_SETTINGS_PANEL" }
   | { type: "UPDATE_TS_CONFIG"; payload: Partial<TypeScriptConfig> }
   | { type: "RUN" };

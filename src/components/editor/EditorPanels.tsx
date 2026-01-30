@@ -1,5 +1,6 @@
 import { Allotment } from "allotment";
 import { useEditor } from "~/context/EditorContext";
+import { useIsMobile } from "~/hooks/useIsMobile";
 import { CodeEditor } from "./CodeEditor";
 import { EditorPane } from "./EditorPane";
 import { PreviewPanel } from "./PreviewPanel";
@@ -10,6 +11,7 @@ interface EditorPanelsProps {
 
 export function EditorPanels({ onEditorReady }: EditorPanelsProps) {
   const { state, dispatch } = useEditor();
+  const isMobile = useIsMobile();
 
   const visiblePanels = Object.entries(state.panels).filter(([, visible]) => visible);
 
@@ -22,7 +24,7 @@ export function EditorPanels({ onEditorReady }: EditorPanelsProps) {
   }
 
   return (
-    <Allotment>
+    <Allotment vertical={isMobile}>
       {state.panels.html && (
         <Allotment.Pane minSize={100}>
           <EditorPane title="HTML">

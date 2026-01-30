@@ -12,7 +12,6 @@ import { ConsoleDrawer } from "./ConsoleDrawer";
 import { EditorHeader } from "./EditorHeader";
 import { EditorPanels } from "./EditorPanels";
 import { LoadingOverlay } from "./LoadingOverlay";
-import { SettingsPanel } from "./SettingsPanel";
 import type { TypeScriptConfig } from "~/types/editor";
 
 interface SavedState {
@@ -64,7 +63,7 @@ function EditorWithPersistence() {
         typescript: initialState.typescript,
         tsConfig: initialState.tsConfig,
       },
-      1000,
+      200,
     );
 
   useEffect(() => {
@@ -133,7 +132,6 @@ function EditorWithPersistence() {
       <div className="flex flex-col h-screen bg-[#1e1e1e] relative">
         <LoadingOverlay visible={loading} />
         <EditorHeader />
-        <SettingsPanel />
         <div className="flex-1 min-h-0">
           <EditorPanels onEditorReady={handleEditorReady} />
         </div>

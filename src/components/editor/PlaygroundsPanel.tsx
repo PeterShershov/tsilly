@@ -78,7 +78,7 @@ export function PlaygroundsPanel({ open, onClose }: PlaygroundsPanelProps) {
   return (
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
-      <div className="absolute top-12 left-4 z-50 w-72 bg-[#252526] border border-[#3c3c3c] rounded-lg shadow-xl">
+      <div className="absolute top-12 right-4 z-50 w-72 bg-[#252526] border border-[#3c3c3c] rounded-lg shadow-xl">
         <div className="px-4 py-3 border-b border-[#3c3c3c]">
           <h2 className="text-sm font-semibold text-gray-200">Playgrounds</h2>
         </div>

@@ -5,18 +5,18 @@ import type {
   TypeScriptConfig,
 } from "~/types/editor";
 
-const DEFAULT_HTML = `Hello you tsilly...`;
+const DEFAULT_HTML = ``;
 
 const DEFAULT_CSS = ``;
 
 const DEFAULT_TYPESCRIPT = ``;
 
 const DEFAULT_TS_CONFIG: TypeScriptConfig = {
-  enableJsx: false,
-  jsxRuntime: "classic",
+  jsx: "none",
   jsxImportSource: "react",
-  disableESTransforms: true,
-  production: false,
+  jsxFactory: "React.createElement",
+  jsxFragmentFactory: "React.Fragment",
+  target: "esnext",
 };
 
 const initialState: EditorState = {
@@ -34,7 +34,6 @@ const initialState: EditorState = {
   consoleOpen: true,
   consoleLogs: [],
   tsConfig: DEFAULT_TS_CONFIG,
-  settingsPanelOpen: false,
   runCounter: 0,
 };
 
@@ -71,8 +70,6 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       return { ...state, consoleLogs: [] };
     case "LOAD_STATE":
       return { ...state, ...action.payload };
-    case "TOGGLE_SETTINGS_PANEL":
-      return { ...state, settingsPanelOpen: !state.settingsPanelOpen };
     case "UPDATE_TS_CONFIG":
       return { ...state, tsConfig: { ...state.tsConfig, ...action.payload } };
     case "RUN":

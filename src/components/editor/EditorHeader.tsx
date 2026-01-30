@@ -1,14 +1,8 @@
 import { useState } from "react";
-import {
-  FolderOpen,
-  Share2,
-  Check,
-  Settings,
-  RefreshCw,
-  Save,
-} from "lucide-react";
+import { FolderOpen, Share2, Check, RefreshCw, Save } from "lucide-react";
 import { useEditor } from "~/context/EditorContext";
 import { useSave } from "~/context/SaveContext";
+import { useIsMobile } from "~/hooks/useIsMobile";
 import { copyShareUrl } from "~/lib/share";
 import type { PanelVisibility } from "~/types/editor";
 import { Logo } from "./Logo";
@@ -17,6 +11,7 @@ import { PlaygroundsPanel } from "./PlaygroundsPanel";
 export function EditorHeader() {
   const { state, dispatch } = useEditor();
   const { saveNow, isSaving } = useSave();
+  const isMobile = useIsMobile();
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
   const [playgroundsOpen, setPlaygroundsOpen] = useState(false);
@@ -46,17 +41,52 @@ export function EditorHeader() {
     }
   };
 
-  const panels: { key: keyof PanelVisibility; label: string }[] = [
-    { key: "html", label: "HTML" },
-    { key: "css", label: "CSS" },
-    { key: "typescript", label: "TypeScript" },
-    { key: "preview", label: "Preview" },
+  const panels: { key: keyof PanelVisibility; label: string; shortLabel: string }[] = [
+    { key: "html", label: "HTML", shortLabel: "HTML" },
+    { key: "css", label: "CSS", shortLabel: "CSS" },
+    { key: "typescript", label: "TypeScript", shortLabel: "TS" },
+    { key: "preview", label: "Preview", shortLabel: "View" },
   ];
 
   return (
-    <header className="flex items-center px-4 py-2 bg-[#252526] border-b border-[#3c3c3c]">
-      <div className="flex items-center gap-3 w-32">
+    <header className="flex items-center px-2 md:px-4 py-2 bg-[#252526] border-b border-[#3c3c3c]">
+      <div className="hidden md:flex items-center w-32">
         <Logo size="sm" />
+      </div>
+      <PlaygroundsPanel
+        open={playgroundsOpen}
+        onClose={() => setPlaygroundsOpen(false)}
+      />
+
+      <div className="flex-1 flex justify-start md:justify-center">
+        <div className="flex gap-0.5 md:gap-1">
+          {panels.map(({ key, label, shortLabel }) => (
+            <button
+              key={key}
+              onClick={() => dispatch({ type: "TOGGLE_PANEL", payload: key })}
+              className={`px-2 md:px-3 py-1 text-xs font-medium transition-colors ${
+                state.panels[key]
+                  ? "text-[#eeeeee]"
+                  : "text-gray-400 hover:text-[#eeeeee]"
+              }`}
+            >
+              {isMobile ? shortLabel : label}
+            </button>
+          ))}
+          <button
+            onClick={() => dispatch({ type: "TOGGLE_CONSOLE" })}
+            className={`px-2 md:px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+              state.consoleOpen
+                ? "text-[#eeeeee]"
+                : "text-gray-400 hover:text-[#eeeeee]"
+            }`}
+          >
+            {isMobile ? "Log" : "Console"}
+          </button>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-1 md:gap-2 justify-end">
         <button
           onClick={() => setPlaygroundsOpen(!playgroundsOpen)}
           className={`p-1.5 rounded transition-colors ${
@@ -68,41 +98,6 @@ export function EditorHeader() {
         >
           <FolderOpen size={16} />
         </button>
-      </div>
-      <PlaygroundsPanel
-        open={playgroundsOpen}
-        onClose={() => setPlaygroundsOpen(false)}
-      />
-
-      <div className="flex-1 flex justify-center">
-        <div className="flex gap-1">
-          {panels.map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => dispatch({ type: "TOGGLE_PANEL", payload: key })}
-              className={`px-3 py-1 text-xs font-medium transition-colors ${
-                state.panels[key]
-                  ? "text-[#eeeeee]"
-                  : "text-gray-400 hover:text-[#eeeeee]"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-          <button
-            onClick={() => dispatch({ type: "TOGGLE_CONSOLE" })}
-            className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-              state.consoleOpen
-                ? "text-[#eeeeee]"
-                : "text-gray-400 hover:text-[#eeeeee]"
-            }`}
-          >
-            Console
-          </button>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 w-40 justify-end">
         <button
           data-testid="save-button"
           onClick={handleSave}
@@ -135,17 +130,6 @@ export function EditorHeader() {
           title="Refresh"
         >
           <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
-        </button>
-        <button
-          onClick={() => dispatch({ type: "TOGGLE_SETTINGS_PANEL" })}
-          className={`p-1.5 rounded transition-colors ${
-            state.settingsPanelOpen
-              ? "text-white bg-[#0e639c]"
-              : "text-gray-400 hover:text-gray-200 hover:bg-[#3c3c3c]"
-          }`}
-          title="TypeScript Settings"
-        >
-          <Settings size={16} />
         </button>
       </div>
     </header>

@@ -6,20 +6,41 @@ export interface CompilationResult {
   error: string | null;
 }
 
-export function compileTypeScript(code: string, config: TypeScriptConfig): CompilationResult {
+export function compileTypeScript(
+  code: string,
+  config: TypeScriptConfig,
+): CompilationResult {
   try {
     const transforms: Transform[] = ["typescript"];
-    if (config.enableJsx) {
+    const enableJsx = config.jsx !== "none";
+
+    if (enableJsx) {
       transforms.push("jsx");
     }
 
+    // Map jsx option to Sucrase's jsxRuntime
+    const jsxRuntime =
+      config.jsx === "react"
+        ? "classic"
+        : config.jsx === "react-jsx"
+          ? "automatic"
+          : config.jsx === "react-jsxdev"
+            ? "automatic"
+            : "classic";
+
+    // Production mode when using react-jsx (not react-jsxdev)
+    const production = config.jsx === "react-jsx";
+
     const result = transform(code, {
       transforms,
-      disableESTransforms: config.disableESTransforms,
-      jsxRuntime: config.jsxRuntime,
+      disableESTransforms: config.target === "esnext",
+      jsxRuntime,
       jsxImportSource: config.jsxImportSource,
-      production: config.production,
+      jsxPragma: config.jsxFactory,
+      jsxFragmentPragma: config.jsxFragmentFactory,
+      production,
     });
+
     return { code: result.code, error: null };
   } catch (err) {
     const error = err instanceof Error ? err.message : String(err);
