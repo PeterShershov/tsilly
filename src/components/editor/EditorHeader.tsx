@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FolderOpen, Share2, Check, RefreshCw, Save } from "lucide-react";
+import { Gamepad2, Share2, Check, RefreshCw, Save } from "lucide-react";
 import { useEditor } from "~/context/EditorContext";
 import { useSave } from "~/context/SaveContext";
 import { useIsMobile } from "~/hooks/useIsMobile";
@@ -11,7 +11,7 @@ import { LayoutDropdown } from "./LayoutDropdown";
 
 export function EditorHeader() {
   const { state, dispatch } = useEditor();
-  const { saveNow, isSaving } = useSave();
+  const { saveNow, isSaving, hasUnsavedChanges } = useSave();
   const isMobile = useIsMobile();
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -42,7 +42,11 @@ export function EditorHeader() {
     }
   };
 
-  const panels: { key: keyof PanelVisibility; label: string; shortLabel: string }[] = [
+  const panels: {
+    key: keyof PanelVisibility;
+    label: string;
+    shortLabel: string;
+  }[] = [
     { key: "html", label: "HTML", shortLabel: "HTML" },
     { key: "css", label: "CSS", shortLabel: "CSS" },
     { key: "typescript", label: "TypeScript", shortLabel: "TS" },
@@ -97,7 +101,7 @@ export function EditorHeader() {
           }`}
           title="Playgrounds"
         >
-          <FolderOpen size={16} />
+          <Gamepad2 size={16} />
         </button>
         <button
           data-testid="save-button"
@@ -108,11 +112,25 @@ export function EditorHeader() {
               ? "text-green-400 bg-[#3c3c3c]"
               : isSaving
                 ? "text-blue-400 bg-[#3c3c3c]"
-                : "text-gray-400 hover:text-blue-400 hover:bg-[#3c3c3c]"
+                : hasUnsavedChanges
+                  ? "text-orange-400 hover:text-orange-300 hover:bg-[#3c3c3c]"
+                  : "text-gray-400 hover:text-blue-400 hover:bg-[#3c3c3c]"
           }`}
-          title={saved ? "Saved!" : isSaving ? "Saving..." : "Save to URL"}
+          title={
+            saved
+              ? "Saved!"
+              : isSaving
+                ? "Saving..."
+                : hasUnsavedChanges
+                  ? "You have unsaved changes"
+                  : "Save to URL"
+          }
         >
-          {saved ? <Check size={16} /> : <Save size={16} className={isSaving ? "animate-pulse" : ""} />}
+          {saved ? (
+            <Check size={16} />
+          ) : (
+            <Save size={16} className={isSaving ? "animate-pulse" : ""} />
+          )}
         </button>
         <button
           onClick={handleShare}

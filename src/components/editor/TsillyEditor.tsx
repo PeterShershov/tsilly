@@ -30,6 +30,7 @@ function EditorWithPersistence() {
   const loadedFromUrl = useRef(false);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [lastSavedState, setLastSavedState] = useState<{ html: string; css: string; typescript: string } | null>(null);
   const editorsReadyCount = useRef(0);
   const editorsReady = useRef(false);
   const minTimeElapsed = useRef(false);
@@ -86,6 +87,12 @@ function EditorWithPersistence() {
     if (sharedWorkspace) {
       loadedFromUrl.current = true;
       dispatch({ type: "LOAD_STATE", payload: sharedWorkspace });
+      // Mark this as the "saved" state since it came from URL
+      setLastSavedState({
+        html: sharedWorkspace.html ?? "",
+        css: sharedWorkspace.css ?? "",
+        typescript: sharedWorkspace.typescript ?? "",
+      });
       // Don't clear URL - keep it for bookmarking/refreshing
       // Set initialLoadDone after a microtask to ensure state is applied
       queueMicrotask(() => {
@@ -155,11 +162,20 @@ function EditorWithPersistence() {
     const shareUrl = getShareUrl(workspace);
     window.history.replaceState({}, "", shareUrl);
 
+    // Mark current state as saved
+    setLastSavedState(workspace);
+
     await new Promise((resolve) => setTimeout(resolve, 300));
     setIsSaving(false);
   }, [state.html, state.css, state.typescript, flushStorage]);
 
-  const saveContextValue: SaveContextValue = { saveNow, isSaving };
+  const hasUnsavedChanges = lastSavedState !== null && (
+    state.html !== lastSavedState.html ||
+    state.css !== lastSavedState.css ||
+    state.typescript !== lastSavedState.typescript
+  );
+
+  const saveContextValue: SaveContextValue = { saveNow, isSaving, hasUnsavedChanges };
 
   return (
     <SaveContext.Provider value={saveContextValue}>

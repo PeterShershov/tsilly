@@ -3,6 +3,7 @@ import { createContext, useContext } from "react";
 export interface SaveContextValue {
   saveNow: () => Promise<void>;
   isSaving: boolean;
+  hasUnsavedChanges: boolean;
 }
 
 export const SaveContext = createContext<SaveContextValue | null>(null);
