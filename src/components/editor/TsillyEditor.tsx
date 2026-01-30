@@ -5,8 +5,9 @@ import {
   useEditor,
   initialState,
 } from "~/context/EditorContext";
-import { useLocalStorage } from "~/hooks/useLocalStorage";
-import { getWorkspaceFromUrl } from "~/lib/share";
+import { SaveContext, type SaveContextValue } from "~/context/SaveContext";
+import { useDebouncedLocalStorage } from "~/hooks/useLocalStorage";
+import { getWorkspaceFromUrl, getShareUrl } from "~/lib/share";
 import { ConsoleDrawer } from "./ConsoleDrawer";
 import { EditorHeader } from "./EditorHeader";
 import { EditorPanels } from "./EditorPanels";
@@ -28,9 +29,11 @@ function EditorWithPersistence() {
   const { state, dispatch } = useEditor();
   const loadedFromUrl = useRef(false);
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const editorsReadyCount = useRef(0);
   const editorsReady = useRef(false);
   const minTimeElapsed = useRef(false);
+  const initialLoadDone = useRef(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -52,15 +55,17 @@ function EditorWithPersistence() {
     }
   }, []);
 
-  const [savedState, setSavedState] = useLocalStorage<SavedState>(
-    "tsilly-code",
-    {
-      html: initialState.html,
-      css: initialState.css,
-      typescript: initialState.typescript,
-      tsConfig: initialState.tsConfig,
-    },
-  );
+  const [savedState, setSavedState, flushStorage] =
+    useDebouncedLocalStorage<SavedState>(
+      "tsilly-code",
+      {
+        html: initialState.html,
+        css: initialState.css,
+        typescript: initialState.typescript,
+        tsConfig: initialState.tsConfig,
+      },
+      1000,
+    );
 
   useEffect(() => {
     // First, check if there's a shared workspace in the URL
@@ -68,10 +73,11 @@ function EditorWithPersistence() {
     if (sharedWorkspace) {
       loadedFromUrl.current = true;
       dispatch({ type: "LOAD_STATE", payload: sharedWorkspace });
-      // Clear the URL params after loading
-      const url = new URL(window.location.href);
-      url.search = "";
-      window.history.replaceState({}, "", url.toString());
+      // Don't clear URL - keep it for bookmarking/refreshing
+      // Set initialLoadDone after a microtask to ensure state is applied
+      queueMicrotask(() => {
+        initialLoadDone.current = true;
+      });
       return;
     }
 
@@ -84,35 +90,55 @@ function EditorWithPersistence() {
     if (hasChanges) {
       dispatch({ type: "LOAD_STATE", payload: savedState });
     }
+    // Delay to prevent saving initial state before loaded state is applied
+    queueMicrotask(() => {
+      initialLoadDone.current = true;
+    });
   }, []);
 
   useEffect(() => {
+    if (!initialLoadDone.current) return;
+
     const newState = {
       html: state.html,
       css: state.css,
       typescript: state.typescript,
       tsConfig: state.tsConfig,
     };
-    const hasChanges =
-      newState.html !== savedState.html ||
-      newState.css !== savedState.css ||
-      newState.typescript !== savedState.typescript ||
-      JSON.stringify(newState.tsConfig) !== JSON.stringify(savedState.tsConfig);
-    if (hasChanges) {
-      setSavedState(newState);
-    }
-  }, [state.html, state.css, state.typescript, state.tsConfig]);
+    setSavedState(newState);
+  }, [state.html, state.css, state.typescript, state.tsConfig, setSavedState]);
+
+  const saveNow = useCallback(async () => {
+    setIsSaving(true);
+    const workspace = {
+      html: state.html,
+      css: state.css,
+      typescript: state.typescript,
+    };
+
+    flushStorage();
+
+    const shareUrl = getShareUrl(workspace);
+    window.history.replaceState({}, "", shareUrl);
+
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    setIsSaving(false);
+  }, [state.html, state.css, state.typescript, flushStorage]);
+
+  const saveContextValue: SaveContextValue = { saveNow, isSaving };
 
   return (
-    <div className="flex flex-col h-screen bg-[#1e1e1e] relative">
-      <LoadingOverlay visible={loading} />
-      <EditorHeader />
-      <SettingsPanel />
-      <div className="flex-1 min-h-0">
-        <EditorPanels onEditorReady={handleEditorReady} />
+    <SaveContext.Provider value={saveContextValue}>
+      <div className="flex flex-col h-screen bg-[#1e1e1e] relative">
+        <LoadingOverlay visible={loading} />
+        <EditorHeader />
+        <SettingsPanel />
+        <div className="flex-1 min-h-0">
+          <EditorPanels onEditorReady={handleEditorReady} />
+        </div>
+        <ConsoleDrawer />
       </div>
-      <ConsoleDrawer />
-    </div>
+    </SaveContext.Provider>
   );
 }
 

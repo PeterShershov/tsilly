@@ -1,4 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
+import LZString from "lz-string";
 
 async function setEditorValue(page: Page, testId: string, value: string) {
   // Find the editor container and use Monaco's API to set value
@@ -124,5 +125,118 @@ test.describe("Tsilly Editor", () => {
     expect(h1Color).toBe("rgb(0, 128, 0)");
 
     await newPage.close();
+  });
+
+  test("direct URL navigation loads workspace correctly", async ({ page }) => {
+    // Create a workspace and encode it
+    const workspace = {
+      html: "<h1>Direct URL Test</h1>",
+      css: "h1 { color: rgb(0, 0, 255); }",
+      typescript: 'console.log("url loaded");',
+    };
+    const encoded = LZString.compressToEncodedURIComponent(JSON.stringify(workspace));
+    const urlWithCode = `http://localhost:5173/?code=${encoded}`;
+
+    // Navigate directly to the URL with the code parameter
+    await page.goto(urlWithCode);
+    await page.waitForSelector("[data-testid='editor-html']", { timeout: 15000 });
+    await page.waitForSelector(".monaco-editor .view-lines", { timeout: 15000 });
+    await page.waitForFunction(
+      () => (window as any).monaco?.editor?.getEditors()?.length >= 3,
+      { timeout: 15000 }
+    );
+
+    // Verify the content is loaded in the preview
+    const iframe = page.frameLocator("iframe[title='Preview']");
+    await expect(iframe.locator("h1")).toContainText("Direct URL Test", { timeout: 5000 });
+
+    // Verify CSS is applied
+    const h1Color = await iframe.locator("h1").evaluate((el) => {
+      return window.getComputedStyle(el).color;
+    });
+    expect(h1Color).toBe("rgb(0, 0, 255)");
+  });
+
+  test("save button updates URL with current state", async ({ page }) => {
+    // Set custom content in the editors
+    await setEditorValue(page, "editor-html", "<h1>Save URL Test</h1>");
+    await setEditorValue(page, "editor-css", "h1 { font-size: 24px; }");
+    await setEditorValue(page, "editor-typescript", 'const x = "saved";');
+
+    // Get initial URL (should not have code param)
+    const initialUrl = page.url();
+    expect(initialUrl).not.toContain("?code=");
+
+    // Click the save button using data-testid
+    const saveButton = page.locator('[data-testid="save-button"]');
+    await expect(saveButton).toBeVisible({ timeout: 5000 });
+    await saveButton.click();
+
+    // Wait for the "Saved!" state
+    await expect(page.locator('[data-testid="save-button"][title="Saved!"]')).toBeVisible({ timeout: 3000 });
+
+    // Verify URL now contains the code parameter
+    await page.waitForFunction(() => window.location.href.includes("?code="), {
+      timeout: 3000,
+    });
+    const newUrl = page.url();
+    expect(newUrl).toContain("?code=");
+
+    // Decode and verify the URL contains our content
+    const urlObj = new URL(newUrl);
+    const encoded = urlObj.searchParams.get("code");
+    expect(encoded).not.toBeNull();
+
+    const decoded = JSON.parse(
+      LZString.decompressFromEncodedURIComponent(encoded!) || "{}"
+    );
+    expect(decoded.html).toBe("<h1>Save URL Test</h1>");
+    expect(decoded.css).toBe("h1 { font-size: 24px; }");
+    expect(decoded.typescript).toBe('const x = "saved";');
+  });
+
+  test("refreshing page with URL preserves state", async ({ page }) => {
+    // Create a workspace and encode it
+    const workspace = {
+      html: "<h1>Refresh Test</h1>",
+      css: "h1 { color: rgb(128, 0, 128); }",
+      typescript: "",
+    };
+    const encoded = LZString.compressToEncodedURIComponent(JSON.stringify(workspace));
+    const urlWithCode = `http://localhost:5173/?code=${encoded}`;
+
+    // Navigate to the URL
+    await page.goto(urlWithCode);
+    await page.waitForSelector("[data-testid='editor-html']", { timeout: 15000 });
+    await page.waitForSelector(".monaco-editor .view-lines", { timeout: 15000 });
+    await page.waitForFunction(
+      () => (window as any).monaco?.editor?.getEditors()?.length >= 3,
+      { timeout: 15000 }
+    );
+
+    // Verify content loaded
+    let iframe = page.frameLocator("iframe[title='Preview']");
+    await expect(iframe.locator("h1")).toContainText("Refresh Test", { timeout: 5000 });
+
+    // Refresh the page
+    await page.reload();
+    await page.waitForSelector("[data-testid='editor-html']", { timeout: 15000 });
+    await page.waitForSelector(".monaco-editor .view-lines", { timeout: 15000 });
+    await page.waitForFunction(
+      () => (window as any).monaco?.editor?.getEditors()?.length >= 3,
+      { timeout: 15000 }
+    );
+
+    // Re-create iframe locator after reload
+    iframe = page.frameLocator("iframe[title='Preview']");
+
+    // Verify content is still there (loaded from URL which is preserved)
+    await expect(iframe.locator("h1")).toContainText("Refresh Test", { timeout: 5000 });
+
+    // Verify CSS is still applied
+    const h1Color = await iframe.locator("h1").evaluate((el) => {
+      return window.getComputedStyle(el).color;
+    });
+    expect(h1Color).toBe("rgb(128, 0, 128)");
   });
 });

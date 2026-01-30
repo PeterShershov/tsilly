@@ -1,6 +1,14 @@
 import { useState } from "react";
-import { FolderOpen, Share2, Check, Settings, RefreshCw } from "lucide-react";
+import {
+  FolderOpen,
+  Share2,
+  Check,
+  Settings,
+  RefreshCw,
+  Save,
+} from "lucide-react";
 import { useEditor } from "~/context/EditorContext";
+import { useSave } from "~/context/SaveContext";
 import { copyShareUrl } from "~/lib/share";
 import type { PanelVisibility } from "~/types/editor";
 import { Logo } from "./Logo";
@@ -8,7 +16,9 @@ import { PlaygroundsPanel } from "./PlaygroundsPanel";
 
 export function EditorHeader() {
   const { state, dispatch } = useEditor();
+  const { saveNow, isSaving } = useSave();
   const [copied, setCopied] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [playgroundsOpen, setPlaygroundsOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -16,6 +26,12 @@ export function EditorHeader() {
     setRefreshing(true);
     dispatch({ type: "RUN" });
     setTimeout(() => setRefreshing(false), 500);
+  };
+
+  const handleSave = async () => {
+    await saveNow();
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   };
 
   const handleShare = async () => {
@@ -88,13 +104,28 @@ export function EditorHeader() {
 
       <div className="flex items-center gap-2 w-40 justify-end">
         <button
+          data-testid="save-button"
+          onClick={handleSave}
+          disabled={isSaving}
+          className={`p-1.5 rounded transition-colors ${
+            saved
+              ? "text-green-400 bg-[#3c3c3c]"
+              : isSaving
+                ? "text-blue-400 bg-[#3c3c3c]"
+                : "text-gray-400 hover:text-blue-400 hover:bg-[#3c3c3c]"
+          }`}
+          title={saved ? "Saved!" : isSaving ? "Saving..." : "Save to URL"}
+        >
+          {saved ? <Check size={16} /> : <Save size={16} className={isSaving ? "animate-pulse" : ""} />}
+        </button>
+        <button
           onClick={handleShare}
           className={`p-1.5 rounded transition-colors ${
             copied
               ? "text-green-400 bg-[#3c3c3c]"
               : "text-gray-400 hover:text-blue-400 hover:bg-[#3c3c3c]"
           }`}
-          title={copied ? "Copied!" : "Share"}
+          title={copied ? "Copied!" : "Copy share link"}
         >
           {copied ? <Check size={16} /> : <Share2 size={16} />}
         </button>
