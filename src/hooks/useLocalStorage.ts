@@ -41,22 +41,19 @@ export function useDebouncedLocalStorage<T>(
   initialValue: T,
   debounceMs: number = 1000
 ): [T, (value: T) => void, () => void] {
-  const [storedValue, setStoredValue] = useState<T>(initialValue);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const pendingValue = useRef<T | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
+  const [storedValue, setStoredValue] = useState<T>(() => {
     try {
       const item = window.localStorage.getItem(key);
       if (item) {
-        setStoredValue(JSON.parse(item));
+        return JSON.parse(item);
       }
     } catch (error) {
       console.warn(`Error reading localStorage key "${key}":`, error);
     }
-    setIsInitialized(true);
-  }, [key]);
+    return initialValue;
+  });
+  const pendingValue = useRef<T | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
@@ -114,5 +111,5 @@ export function useDebouncedLocalStorage<T>(
     }
   }, [key]);
 
-  return [isInitialized ? storedValue : initialValue, setValue, flushNow];
+  return [storedValue, setValue, flushNow];
 }
