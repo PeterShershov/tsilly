@@ -175,6 +175,20 @@ function EditorWithPersistence() {
     state.typescript !== lastSavedState.typescript
   );
 
+  // Warn user before leaving if there are unsaved changes
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      // Modern browsers ignore custom messages, but we need to return something
+      return "You have unsaved changes. Are you sure you want to leave?";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
   const saveContextValue: SaveContextValue = { saveNow, isSaving, hasUnsavedChanges };
 
   return (
