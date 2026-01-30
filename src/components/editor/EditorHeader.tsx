@@ -7,6 +7,7 @@ import { copyShareUrl } from "~/lib/share";
 import type { PanelVisibility } from "~/types/editor";
 import { Logo } from "./Logo";
 import { PlaygroundsPanel } from "./PlaygroundsPanel";
+import { LayoutDropdown } from "./LayoutDropdown";
 
 export function EditorHeader() {
   const { state, dispatch } = useEditor();
@@ -131,6 +132,7 @@ export function EditorHeader() {
         >
           <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
         </button>
+        <LayoutDropdown />
       </div>
     </header>
   );

@@ -8,6 +8,7 @@ import {
 import { SaveContext, type SaveContextValue } from "~/context/SaveContext";
 import { useDebouncedLocalStorage } from "~/hooks/useLocalStorage";
 import { getWorkspaceFromUrl, getShareUrl } from "~/lib/share";
+import type { Layout } from "~/types/editor";
 import { ConsoleDrawer } from "./ConsoleDrawer";
 import { EditorHeader } from "./EditorHeader";
 import { EditorPanels } from "./EditorPanels";
@@ -66,6 +67,19 @@ function EditorWithPersistence() {
       200,
     );
 
+  // Load layout synchronously to avoid flash
+  const [savedLayout, setSavedLayout] = useState<Layout>(() => {
+    try {
+      const item = window.localStorage.getItem("tsilly-layout");
+      if (item) {
+        return JSON.parse(item) as Layout;
+      }
+    } catch (error) {
+      console.warn('Error reading layout from localStorage:', error);
+    }
+    return initialState.layout;
+  });
+
   useEffect(() => {
     // First, check if there's a shared workspace in the URL
     const sharedWorkspace = getWorkspaceFromUrl();
@@ -95,6 +109,26 @@ function EditorWithPersistence() {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Load layout on mount
+  useEffect(() => {
+    if (savedLayout !== state.layout) {
+      dispatch({ type: "SET_LAYOUT", payload: savedLayout });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Save layout when it changes
+  useEffect(() => {
+    if (state.layout !== savedLayout) {
+      setSavedLayout(state.layout);
+      try {
+        window.localStorage.setItem("tsilly-layout", JSON.stringify(state.layout));
+      } catch (error) {
+        console.warn('Error saving layout to localStorage:', error);
+      }
+    }
+  }, [state.layout, savedLayout]);
 
   useEffect(() => {
     if (!initialLoadDone.current) return;
@@ -132,7 +166,7 @@ function EditorWithPersistence() {
       <div className="flex flex-col h-screen bg-[#1e1e1e] relative">
         <LoadingOverlay visible={loading} />
         <EditorHeader />
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 bg-[#1e1e1e]">
           <EditorPanels onEditorReady={handleEditorReady} />
         </div>
         <ConsoleDrawer />

@@ -12,6 +12,8 @@ export interface PanelVisibility {
   preview: boolean;
 }
 
+export type Layout = "vertical" | "stacked" | "sidebar";
+
 export interface TypeScriptConfig {
   // JSX Options (compilerOptions.jsx)
   jsx: "none" | "react" | "react-jsx" | "react-jsxdev";
@@ -33,6 +35,7 @@ export interface EditorState {
   consoleLogs: ConsoleLogEntry[];
   tsConfig: TypeScriptConfig;
   runCounter: number;
+  layout: Layout;
 }
 
 export type EditorAction =
@@ -46,4 +49,5 @@ export type EditorAction =
   | { type: "CLEAR_CONSOLE" }
   | { type: "LOAD_STATE"; payload: Partial<EditorState> }
   | { type: "UPDATE_TS_CONFIG"; payload: Partial<TypeScriptConfig> }
+  | { type: "SET_LAYOUT"; payload: Layout }
   | { type: "RUN" };

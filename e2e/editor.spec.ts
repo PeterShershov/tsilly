@@ -239,4 +239,141 @@ test.describe("Tsilly Editor", () => {
     });
     expect(h1Color).toBe("rgb(128, 0, 128)");
   });
+
+  test.describe("Layout Dropdown", () => {
+    test("opens dropdown and shows all layout options", async ({ page }) => {
+      // Click the layout button
+      const layoutButton = page.getByTitle("Layout");
+      await layoutButton.click();
+
+      // Verify dropdown is visible with all options
+      await expect(page.getByRole("button", { name: "Vertical" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Stacked" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Sidebar" })).toBeVisible();
+    });
+
+    test("closes dropdown when clicking outside", async ({ page }) => {
+      // Open dropdown
+      const layoutButton = page.getByTitle("Layout");
+      await layoutButton.click();
+      await expect(page.getByRole("button", { name: "Vertical" })).toBeVisible();
+
+      // Click outside
+      await page.locator("body").click({ position: { x: 10, y: 10 } });
+
+      // Verify dropdown is closed
+      await expect(page.getByRole("button", { name: "Vertical" })).not.toBeVisible();
+    });
+
+    test("selecting Stacked layout changes panel arrangement", async ({ page }) => {
+      // Open dropdown and select Stacked
+      await page.getByTitle("Layout").click();
+      await page.getByRole("button", { name: "Stacked" }).click();
+
+      // Verify dropdown closed
+      await expect(page.getByRole("button", { name: "Stacked" })).not.toBeVisible();
+
+      // Verify layout changed by checking localStorage
+      const savedLayout = await page.evaluate(() => localStorage.getItem("tsilly-layout"));
+      expect(savedLayout).toBe('"stacked"');
+
+      // Re-open dropdown and verify Stacked is now highlighted
+      await page.getByTitle("Layout").click();
+      const stackedButton = page.getByRole("button", { name: "Stacked" });
+      await expect(stackedButton).toHaveClass(/bg-\[#0e639c\]/);
+    });
+
+    test("selecting Sidebar layout changes panel arrangement", async ({ page }) => {
+      // Open dropdown and select Sidebar
+      await page.getByTitle("Layout").click();
+      await page.getByRole("button", { name: "Sidebar" }).click();
+
+      // Verify dropdown closed
+      await expect(page.getByRole("button", { name: "Sidebar" })).not.toBeVisible();
+
+      // Verify layout changed by checking localStorage
+      const savedLayout = await page.evaluate(() => localStorage.getItem("tsilly-layout"));
+      expect(savedLayout).toBe('"sidebar"');
+
+      // Re-open dropdown and verify Sidebar is now highlighted
+      await page.getByTitle("Layout").click();
+      const sidebarButton = page.getByRole("button", { name: "Sidebar" });
+      await expect(sidebarButton).toHaveClass(/bg-\[#0e639c\]/);
+    });
+
+    test("selecting Vertical layout shows all panels side by side", async ({ page }) => {
+      // First switch to Stacked, then back to Vertical
+      await page.getByTitle("Layout").click();
+      await page.getByRole("button", { name: "Stacked" }).click();
+      await page.waitForTimeout(200);
+
+      // Now switch to Vertical
+      await page.getByTitle("Layout").click();
+      await page.getByRole("button", { name: "Vertical" }).click();
+
+      // Verify dropdown closed
+      await expect(page.getByRole("button", { name: "Vertical" })).not.toBeVisible();
+
+      // Verify layout changed by checking localStorage
+      const savedLayout = await page.evaluate(() => localStorage.getItem("tsilly-layout"));
+      expect(savedLayout).toBe('"vertical"');
+    });
+
+    test("layout choice persists after page refresh", async ({ page }) => {
+      // Clear localStorage first
+      await page.evaluate(() => localStorage.removeItem("tsilly-layout"));
+      await page.reload();
+      await page.waitForSelector("[data-testid='editor-html']", { timeout: 15000 });
+      await page.waitForFunction(() => (window as any).monaco?.editor?.getEditors()?.length >= 3, {
+        timeout: 15000,
+      });
+
+      // Select Stacked layout
+      await page.getByTitle("Layout").click();
+      await page.getByRole("button", { name: "Stacked" }).click();
+      await page.waitForTimeout(300);
+
+      // Verify localStorage has the layout
+      const savedLayout = await page.evaluate(() => localStorage.getItem("tsilly-layout"));
+      expect(savedLayout).toBe('"stacked"');
+
+      // Reload the page
+      await page.reload();
+      await page.waitForSelector("[data-testid='editor-html']", { timeout: 15000 });
+      await page.waitForFunction(() => (window as any).monaco?.editor?.getEditors()?.length >= 3, {
+        timeout: 15000,
+      });
+
+      // Verify the layout is still Stacked by opening dropdown and checking highlighted option
+      await page.getByTitle("Layout").click();
+      const stackedButton = page.getByRole("button", { name: "Stacked" });
+      await expect(stackedButton).toHaveClass(/bg-\[#0e639c\]/);
+
+      // Clean up
+      await page.evaluate(() => localStorage.removeItem("tsilly-layout"));
+    });
+
+    test("highlights currently selected layout option", async ({ page }) => {
+      // Default should be Vertical - open dropdown and check
+      await page.getByTitle("Layout").click();
+
+      // Vertical should have the selected style (bg-[#0e639c])
+      const verticalButton = page.getByRole("button", { name: "Vertical" });
+      await expect(verticalButton).toHaveClass(/bg-\[#0e639c\]/);
+
+      // Close and switch to Stacked
+      await page.getByRole("button", { name: "Stacked" }).click();
+      await page.waitForTimeout(200);
+
+      // Open dropdown again
+      await page.getByTitle("Layout").click();
+
+      // Now Stacked should be highlighted
+      const stackedButton = page.getByRole("button", { name: "Stacked" });
+      await expect(stackedButton).toHaveClass(/bg-\[#0e639c\]/);
+
+      // Vertical should not be highlighted
+      await expect(verticalButton).not.toHaveClass(/bg-\[#0e639c\]/);
+    });
+  });
 });

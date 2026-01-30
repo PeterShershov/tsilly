@@ -35,6 +35,7 @@ const initialState: EditorState = {
   consoleLogs: [],
   tsConfig: DEFAULT_TS_CONFIG,
   runCounter: 0,
+  layout: "vertical",
 };
 
 function editorReducer(state: EditorState, action: EditorAction): EditorState {
@@ -74,6 +75,8 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       return { ...state, tsConfig: { ...state.tsConfig, ...action.payload } };
     case "RUN":
       return { ...state, runCounter: state.runCounter + 1 };
+    case "SET_LAYOUT":
+      return { ...state, layout: action.payload };
     default:
       return state;
   }
