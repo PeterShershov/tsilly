@@ -150,7 +150,7 @@ export function EditorHeader() {
         >
           <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
         </button>
-        <LayoutDropdown />
+        {!isMobile && <LayoutDropdown />}
       </div>
     </header>
   );
