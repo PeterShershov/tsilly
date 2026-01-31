@@ -104,7 +104,8 @@ export function CodeEditor({
     if (!containerRef.current || !monaco) return;
 
     // Create model with proper file extension for language services
-    const fileExtension = language === "typescript" ? "ts" : language === "html" ? "html" : "css";
+    const fileExtension =
+      language === "typescript" ? "ts" : language === "html" ? "html" : "css";
     const uri = monaco.Uri.parse(`file:///main.${fileExtension}`);
 
     // Dispose existing model if it exists
@@ -121,6 +122,10 @@ export function CodeEditor({
       minimap: { enabled: false },
       fontSize: 14,
       lineNumbers: "off",
+      lineDecorationsWidth: 0,
+      lineNumbersMinChars: 0,
+      glyphMargin: false,
+      folding: false,
       scrollBeyondLastLine: false,
       automaticLayout: true,
       tabSize: 2,
@@ -167,7 +172,7 @@ export function CodeEditor({
   return (
     <div
       ref={containerRef}
-      className="h-full w-full"
+      className="h-full w-full px-2"
       data-testid={`editor-${language}`}
     />
   );
