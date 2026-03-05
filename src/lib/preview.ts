@@ -62,19 +62,51 @@ const CONSOLE_CAPTURE_SCRIPT = `
     originalConsole.info.apply(console, args);
   };
 
-  window.onerror = function(message, source, lineno, colno, error) {
-    sendToParent('error', [error ? error.stack : message]);
-    return false;
-  };
+  window.addEventListener('error', function(event) {
+    var error = event.error;
+    var msg;
+    if (error instanceof Error) {
+      msg = error.stack || '';
+      // Some browsers (e.g. Firefox) don't include the message in the stack
+      if (!msg.includes(error.message)) {
+        msg = error.name + ': ' + error.message + '\\n' + msg;
+      }
+      if (!msg) {
+        msg = error.name + ': ' + error.message;
+      }
+    } else if (event.message) {
+      msg = event.message;
+    } else {
+      msg = 'Unknown error';
+    }
+    sendToParent('error', [msg]);
+  });
 
-  window.onunhandledrejection = function(event) {
-    sendToParent('error', ['Unhandled Promise Rejection: ' + event.reason]);
-  };
+  window.addEventListener('unhandledrejection', function(event) {
+    var reason = event.reason;
+    var msg;
+    if (reason instanceof Error) {
+      msg = reason.stack || '';
+      if (!msg.includes(reason.message)) {
+        msg = reason.name + ': ' + reason.message + '\\n' + msg;
+      }
+      if (!msg) {
+        msg = reason.name + ': ' + reason.message;
+      }
+    } else {
+      msg = String(reason);
+    }
+    sendToParent('error', ['Unhandled Promise Rejection: ' + msg]);
+  });
 })();
 </script>
 `;
 
-export function generatePreviewDocument({ html, css, js }: PreviewOptions): string {
+export function generatePreviewDocument({
+  html,
+  css,
+  js,
+}: PreviewOptions): string {
   return `<!DOCTYPE html>
 <html>
 <head>
