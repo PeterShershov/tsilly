@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Gamepad2, Share2, Check, RefreshCw, Save } from "lucide-react";
+import { Gamepad2, Share2, Check, RefreshCw, Save, Trash2 } from "lucide-react";
 import { useEditor } from "~/context/EditorContext";
 import { useSave } from "~/context/SaveContext";
 import { useIsMobile } from "~/hooks/useIsMobile";
@@ -17,6 +17,12 @@ export function EditorHeader() {
   const [saved, setSaved] = useState(false);
   const [playgroundsOpen, setPlaygroundsOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  const handleClearAll = () => {
+    dispatch({ type: "SET_HTML", payload: "" });
+    dispatch({ type: "SET_CSS", payload: "" });
+    dispatch({ type: "SET_TYPESCRIPT", payload: "" });
+  };
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -142,6 +148,13 @@ export function EditorHeader() {
           title={copied ? "Copied!" : "Copy share link"}
         >
           {copied ? <Check size={16} /> : <Share2 size={16} />}
+        </button>
+        <button
+          onClick={handleClearAll}
+          className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-[#3c3c3c] rounded transition-colors"
+          title="Clear all"
+        >
+          <Trash2 size={16} />
         </button>
         <button
           onClick={handleRefresh}
