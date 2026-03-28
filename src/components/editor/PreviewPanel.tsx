@@ -72,7 +72,7 @@ export function PreviewPanel() {
       <iframe
         ref={iframeRef}
         srcDoc={previewDoc}
-        sandbox="allow-scripts allow-same-origin allow-modals allow-forms allow-popups"
+        sandbox="allow-scripts allow-modals allow-forms allow-popups"
         title="Preview"
         className="h-full w-full border-0"
       />
