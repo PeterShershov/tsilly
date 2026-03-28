@@ -1,72 +1,47 @@
-# Tsilly
+# tsilly.dev
 
-A browser-based TypeScript playground with live preview. Write HTML, CSS, and TypeScript code side-by-side and see instant results.
+A TypeScript playground that runs in the browser.
 
-## Features
+This is intentionally plain.
 
-- **Three-pane editor** - HTML, CSS, and TypeScript editors powered by Monaco Editor
-- **Live preview** - Instantly see your changes rendered in an iframe
-- **TypeScript compilation** - Client-side TypeScript to JavaScript compilation using Sucrase
-- **Emmet support** - Fast HTML/CSS authoring with Emmet abbreviations
-- **Console output** - View console logs and errors from your code
-- **Share workspaces** - Generate shareable URLs with your code encoded
-- **Local persistence** - Your work is automatically saved to localStorage
-- **Resizable panels** - Adjust editor and preview panel sizes to your preference
+Raw DOM like nature intended.
+No AI, no Tailwind, no npm installs, no frameworks.
+Also no servers, no analytics and no data collection.
 
-## Getting Started
+[tsilly.dev](https://tsilly.dev)
 
-### Prerequisites
+## What it does
 
-- Node.js 18+
-- npm
+**Editor**
 
-### Installation
+- HTML, CSS and TypeScript side by side
+- Monaco with IntelliSense and TypeScript diagnostics
+- Emmet for HTML and CSS
 
-```bash
-npm install
-```
+**Preview**
 
-### Development
+- Instant live preview in a sandboxed iframe
+- Console output with log, warn, error and info levels
+- Runtime errors and unhandled rejections captured
+- Client-side TypeScript compilation
+- Compile errors shown directly in the preview
+- Manual run button to force a re-render
 
-```bash
-npm run dev
-```
+**Layout**
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+- Multiple selectable layouts with resizable panels
+- Toggle individual panels on or off
+- Works on mobile
 
-### Build
+**Saving and sharing**
 
-```bash
-npm run build
-```
-
-### Preview Production Build
-
-```bash
-npm run preview
-```
-
-## Scripts
-
-| Script                | Description                  |
-| --------------------- | ---------------------------- |
-| `npm run dev`         | Start development server     |
-| `npm run build`       | Build for production         |
-| `npm run preview`     | Preview production build     |
-| `npm run lint`        | Run ESLint                   |
-| `npm run typecheck`   | Run TypeScript type checking |
-| `npm run test:e2e`    | Run Playwright e2e tests     |
-| `npm run test:e2e:ui` | Run Playwright tests with UI |
-
-## Tech Stack
-
-- [React](https://react.dev/) - UI framework
-- [Vite](https://vite.dev/) - Build tool
-- [TypeScript](https://www.typescriptlang.org/) - Type safety
-- [Monaco Editor](https://microsoft.github.io/monaco-editor/) - Code editor
-- [Sucrase](https://github.com/alangpierce/sucrase) - TypeScript compilation
-- [Tailwind CSS](https://tailwindcss.com/) - Styling
-- [Playwright](https://playwright.dev/) - E2E testing
+- Auto-save locally
+- Named playgrounds saved to IndexedDB
+- Shareable URLs with code compressed into the link
+- Share via URL or save to update the address bar
+- Shared URLs override local state on load
+- Unsaved change detection with leave-page warning
+- Clear all editors in one click
 
 ## License
 
